@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>SameGame – Edward Edition</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+    </head>
+    <body >
+        <h1>Same Game </h1>
+        <a href="" class="btn btn-success">Fancy button klal</a>
+
+        <div class="album py-5 bg-light">
+            <div class="container">
+        
+                <div class="row">
+                        <div class="col-sm">
+                            <div id="playfield">
+                            </div>
+                        </div>
+                        <div class="col-sm">
+                            <div >Points: <label id="points">0</label></div>
+                        </div>                              
+                </div>
+            </div>
+        </div>
+
+
+        Same Game under construction, check the console for now.
+
+        <script>
+            // the used playfield with 10 columns and 6 rows
+            
+            /*
+            var playfield = [
+                ['r', 'r', ' ', ' '],
+                ['b', 'g', 'r', 'b'],
+                ['g', 'r', 'r', 'r'],
+                ['r', 'b', 'b', 'b'],
+            ];*/
+            
+            /*
+            var playfield = [
+                ['r', 'r', ' ', 'b'],
+                ['r', 'r', 'r', 'r'],
+                ['r', 'r', 'r', 'r'],
+                ['r', 'r', 'r', 'r'],
+            ];
+            */
+
+
+            /*
+            var playfield = [
+                ['g', 'b', ' ', 'b'],
+                ['r', 'r', 'r', 'r'],
+                ['r', 'r', 'b', 'r'],
+                ['a', 'c', 'r', 'r'],
+            ];*/
+            
+            /*
+            var playfield = [
+                ['r', 'r', 'b', 'g'],
+                ['r', 'r', 'r', 'b'],
+                ['r', 'r', 'b', 'b'],
+                ['r', 'r', 'r', 'r'],
+            ];*/
+
+            var playfield = [
+                ['b', 'r', 'b', 'g'],
+                ['r', 'r', 'r', 'b'],
+                ['r', 'r', 'r', 'b'],
+                ['b', 'r', 'r', 'r'],
+            ];
+
+            var kpoints = 0;
+
+            function print_playfield()
+            {
+                for(var index in playfield){
+                    var row = playfield[index];
+                    console.log(row);
+                }
+            }
+
+            function print_Points(){
+                console.log("kPoints: " + kpoints);
+            }
+
+            function get_value(y,x)
+            {
+                var row = playfield[y];
+                return row[x];                
+            }
+
+            function get_direct_connected(y,x)
+            {
+
+                var cordinations = [];
+                cordinations.push([y,x]);
+
+                var SValue = get_value(y,x);
+                if(x>0)
+                {
+                    var left_value = get_value(y,x-1);
+                    if(SValue == left_value)
+                    {
+                        cordinations.push([y,x-1]);
+                    }
+                }
+                if(x<playfield[0].length-1)
+                {
+                    var right_value = get_value(y,x+1);
+                    if(SValue == right_value)
+                    {
+                        cordinations.push([y,x+1]);
+                    }
+                }
+                if(y>0)
+                {
+                    var top_value = get_value(y-1,x);
+                    if(SValue == top_value)
+                    {
+                        cordinations.push([y-1,x]);
+                    }
+                }
+                if(y<playfield.length-1)
+                {
+                    var bottom_value = get_value(y+1,x);
+                    if(SValue == bottom_value)
+                    {
+                        cordinations.push([y+1,x]);
+                    }
+                }
+
+
+                return cordinations;
+
+            }
+            function get_all_connected(y, x, cords){
+
+                for(var j in cords){                        
+                    if(y == cords[j][0] && x == cords[j][1] ){
+                        // already in, thus ignore
+                        return [];
+                    }
+                }
+
+                // add this stone as we visited it
+                cords.push([y,x]);
+                
+                // get surrounding matching stones
+                var direct_connected = get_direct_connected(y,x);
+                
+                var newStones = [];
+
+                // check the surroundings and do recusrion if necessary
+                for(var i in direct_connected){
+
+                    var curCord = direct_connected[i];
+                    
+                    var stonceAlreadyChecked = false;
+
+                    // already found ? 
+                    for(var j in cords){                        
+                        if(curCord[0] == cords[j][0] && curCord[1] == cords[j][1] ){
+                            // already in, thus ignore
+                            stonceAlreadyChecked = true;
+                            break;
+                        }
+                    }
+                    
+                    if(stonceAlreadyChecked)
+                        continue;
+
+                    // not yet in => recursion
+                    var curY = curCord[0];
+                    var curX = curCord[1];
+                    var remoteConnected = get_all_connected(curY,curX,cords);
+                    for(var j in remoteConnected){
+                        newStones.push(remoteConnected[j]);
+                    }
+                                        
+                }
+                
+                for(var i in newStones){
+                    var stonceAlreadyChecked = false;
+
+                    for(var j in cords){
+                        if(newStones[i][0] == cords[j][0] && newStones[i][1] == cords[j][1] ){
+                            // already in, thus ignore
+                            stonceAlreadyChecked = true;
+                            break;
+                        }
+                    }
+
+                    if(stonceAlreadyChecked)
+                        continue;
+                        
+                    cords.push(newStones[i]);
+                }
+
+                return cords;
+            }
+
+            //What i did, as trying to remove the connected ones 2th
+            function remove_all_connected(y, x, cords)
+            {
+
+                if(playfield[y][x] == " ")
+                    return playfield;
+
+                var connected_ones = get_all_connected(y, x, cords);
+                if(cords.length > 1)
+                {
+                    for(var j in cords)
+                    {
+                        var test = [];
+                        test.push(cords[j]);
+                        for(var i in test)
+                        {
+                            test = test[i];
+                            var Y = test[0];
+                            var X = test[1];
+                            //playfield[Y].splice(X, 1, '');
+                            playfield[Y][X] = ' ';
+                            
+                        }
+                    }
+                }
+                return playfield;
+            }
+
+            function move_stones(){
+
+                for(var x = 0; x < playfield[0].length; x++){
+
+                    var newColumn = [];
+
+                    for(var y = 0; y < playfield.length; y++){
+                        var curVal = playfield[y][x];            
+                        if(curVal != ' '){
+                            newColumn.push(curVal);
+                        }
+                    }
+
+                    // add empty at the start of the array
+                    var difference = playfield.length - newColumn.length;
+                    for (var index = 0; index < difference; index++) {
+                        newColumn.splice(0, 0, " ");                        
+                    }
+
+                    // apply the new column to the playfield
+                    for (var index = 0; index < playfield.length; index++) {                        
+                        playfield[index][x] = newColumn[index];                        
+                    }
+
+                }
+                
+                
+                for(var y = 0; y < playfield[0].length; y++){
+
+                    var newRows = [];
+
+                    for(var x = 0; x < playfield.length; x++){
+                        var curVal = playfield[y][x];            
+                        if(curVal != ' '){
+                            newRows.push(curVal);
+                        }
+                    }
+
+                    // add empty after the values
+                    var difference = playfield.length - newRows.length;
+                    for (var index = 0; index < difference; index++) {
+                        newRows.push(" ");                        
+                    }
+
+                    // apply the new row to the playfield
+                    for (var index = 0; index < playfield.length; index++) {                        
+                        playfield[y][index] = newRows[index];                        
+                    }
+
+                }
+
+
+            } 
+       
+            function addPoints(removedStonesCount){          
+                if(removedStonesCount > 1){
+                    kpoints += Math.pow(removedStonesCount, 2);
+                }
+            }
+
+            var handleClick = function(y, x){
+                var removeStones = [];
+                remove_all_connected(y,x,removeStones);
+                if(removeStones.length > 1){
+                    move_stones();
+                    addPoints(removeStones.length);
+                }
+                                                    
+                print_playfield();
+                print_Points();
+            }
+
+            var testFunc = function(){
+                /*
+                print_playfield();
+                remove_all_connected(2,2, []);
+                console.log("---------------------------------------");
+                print_playfield();
+                move_stones();
+                console.log("=");                
+
+                console.log();
+                */
+
+/*
+                handleClick(2,1);                
+                handleClick(3,3);
+                */
+
+                handleClick(1,1);
+                /*
+                handleClick(3,3);
+                handleClick(2,2);
+                */
+            }
+
+            //testFunc();
+
+            /*var handleClick = function(y,x){
+            0. is field empty? if so return ✔
+            1. get all connected (allCon) ✔
+            2. check if more than threeshold ✔
+            3. calculation of new points
+            4. remove allCon ✔
+            5. moce stones ✔
+            finish
+
+            ***
+            handle inpput (which is splitted into):
+            - get if block was clicked (not necessary now)
+            - get all connected blocks (this has the amount in it, cause we get an array)
+            - remove the blocks calculate points
+            and than it waits again for input
+            ***
+
+            }*/
+            
+            //console.log()
+
+
+            //print_playfield();
+
+            var initGUI = function(){
+
+                var width = 10;
+                var height = 10;
+
+                playfield = [];
+
+                for(var x = 0; x < width; x++){
+                    var newRow = [];
+                    for(var y = 0; y < height; y++){
+                        var rand = Math.random() * 100;
+
+                        var value = "r";
+                        if(rand < 33){
+                            value = "g";
+                        } else {
+                            if(rand < 66){
+                                value = "b";
+                            }
+                        }
+                         
+                        newRow.push(value);
+                    }
+                    playfield.push(newRow);
+                }
+
+                updateGui();                
+            }
+
+            var updateGui = function(){
+
+                var html = "";
+
+                var fieldWidth = playfield.length;
+                var fieldHeight = playfield[0].length;
+
+                var blockWidthPercent = (1 / fieldWidth) * 100;
+                var blockHeightPercent = (1 / fieldHeight) * 100;
+
+                $('#playfield').css("height", (fieldHeight * 100) + "px");
+
+                for(var x = 0; x < playfield[0].length; x++){
+                    for(var y = 0; y < playfield.length; y++){
+
+                        var blockValue = playfield[x][y];
+
+                        var blockColor = "transparent";
+                        switch(blockValue){
+                            case "r":
+                                blockColor = "red";
+                                break;
+                            case "g":
+                                blockColor = "green";
+                                break;
+                            case "b":
+                                blockColor = "blue";
+                                break;                    
+                        }
+
+                        var blockHtml = '<div class="stone" data-y="' + y + '" data-x="' + x + '" style="display:inline-block;width:' + blockWidthPercent  + '%;height:' + blockHeightPercent + '%;cursor:pointer;"><div style="background:' + blockColor + ';margin:5px;padding:5px;border-radius:5px;height:100%;"></div></div>';
+
+                        html += blockHtml;
+                    }
+                }
+                
+                $('#points').text(kpoints);
+                $('#playfield').html(html);
+            }
+
+            $(document).on('click', '.stone', function(){
+                var x = $(this).data('x');
+                var y = $(this).data('y');
+
+                handleClick(x,y);
+
+                updateGui();
+            });
+            
+
+            initGUI();
+
+        </script>
+
+    </body>
+</html>
